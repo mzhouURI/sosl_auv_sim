@@ -15,7 +15,7 @@ double b = -0.015;
 double Xudot=-3;
 double Yvdot = -31.4;
 double Nrdot = -2.6;
-
+double PI = 3.1415926;
 nav_msgs::Odometry odometry;
 geometry_msgs::Vector3 rpy;
 std_msgs::Float32 c_rpm;
@@ -23,12 +23,12 @@ std_msgs::Float32 c_fin;
 
 
 double deg2rad (double degrees) {
-    double PI = 3.1415926;
+    
     return degrees * PI / 180.0;
 }
 
 double rad2deg (double radians) {
-    double PI = 3.1415926;
+
     return radians *180.0/ PI;
 }
 
@@ -47,7 +47,7 @@ void dead_reckon()
 	//hydrodynamic damping force
 	Xh =  -10.0 * odometry.twist.twist.linear.x *fabs(odometry.twist.twist.linear.x);
 	Yh = -400.0 * odometry.twist.twist.linear.y *fabs(odometry.twist.twist.linear.y);
-	Nh = -300.0 * odometry.twist.twist.angular.z *fabs(odometry.twist.twist.angular.z);
+	Nh = -200.0 * odometry.twist.twist.angular.z *fabs(odometry.twist.twist.angular.z);
 	//ROS_INFO("Xh=%.3f|Yh=%.3f|Nh=%.3f",Xh, Yh, Nh);
 	//estimate the acceleration
 	accel.linear.x = 1.0f/(m-Xudot) * (T - D + Xh
@@ -75,6 +75,14 @@ void dead_reckon()
 			 odometry.pose.pose.orientation.w);
 	tf::Matrix3x3 m(q);
 	m.getRPY(rpy.x, rpy.y, rpy.z); ///RPY in rad
+	if(rpy.z<0)
+	{
+	rpy.z=rpy.z+2*PI;
+	}
+	if(rpy.z>2*PI)
+	{
+	rpy.z=rpy.z-2*PI;
+	}
 	//ROS_INFO("rpy.x=%.3f|rpy.y=%.3f|rpy.z=%.3f",rpy.x,
 	//				   	    rpy.y,
 	//				  	    rpy.z);
@@ -97,9 +105,9 @@ void dead_reckon()
 
 	//transform
 	geometry_msgs::TransformStamped odom_trans;
-	odom_trans.header.stamp = ros::Time::now();;
-	odom_trans.header.frame_id = "auv";
-	//odom_trans.child_frame_id = "base_link";
+	odom_trans.header.stamp = ros::Time::now();
+	odom_trans.header.frame_id = "map";
+	odom_trans.child_frame_id = "auv";
 	//assign translation and rotatino values
 	odom_trans.transform.translation.x = odometry.pose.pose.position.x;
 	odom_trans.transform.translation.y = odometry.pose.pose.position.y;
@@ -145,16 +153,14 @@ int main (int argc, char **argv)
 	//initial pose
 	odometry.pose.pose.orientation = tf::createQuaternionMsgFromYaw(0);
 	odometry.header.frame_id = "auv";
-	odometry.child_frame_id = "base_link";
+	//odometry.child_frame_id = "base_link";
 	getchar();
 
 	while (ros::ok())
 	{
 	dead_reckon();
-	//ROS_INFO("Running");
 	m_pose_pub.publish(odometry);	
 	m_rpy_pub.publish(rpy);
-	//getchar();
 	ros::spinOnce();
 	loop_rate.sleep();
 	}

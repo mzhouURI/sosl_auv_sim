@@ -47,7 +47,7 @@ class SpeedController
 		
 		double error, delta_error, dt;
 		error = c_speed - msg->twist.twist.linear.x; //x-axis speed in the vehicle frame
-		dt = ros::Time::now().toSec() - ot;
+		dt = 0.1;//ros::Time::now().toSec() - ot;
 		//dt =0.1;
 		delta_error = (msg->twist.twist.linear.x - o_speed)/dt;
 		o_speed = msg->twist.twist.linear.x;

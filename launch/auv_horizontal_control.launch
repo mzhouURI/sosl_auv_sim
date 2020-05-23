@@ -8,9 +8,10 @@
 		<param name = "Kd" value ="200"/>
 	</node>
 	<node name = "heading_controller" pkg = "sosl_auv_sim" type ="heading_controller" output = "screen">
-		<param name = "c_heading" type="double" value ="0.35"/>
-		<param name = "Kp" value ="200"/>
-		<param name = "Ki" value ="20"/>
-		<param name = "Kd" value ="500"/>
+		<param name = "Kp" value ="1000"/>
+		<param name = "Ki" value ="5"/>
+		<param name = "Kd" value ="1000"/>
 	</node>
+	<node name = "rviz" pkg ="rviz" type="rviz"/>
+	<node name = "map_to_auv" pkg ="tf" type ="static_transform_publisher" args ="0 0 0 0 0 0 map auv 100"/>
 </launch>

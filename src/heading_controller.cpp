@@ -34,8 +34,9 @@ class HeadingController
 		
 		sub_ = n_.subscribe("/auv/odometry",10,&HeadingController::headingctlCallback,this);
 		sub2_= n_.subscribe("/auv/rpy",10, &HeadingController::headingcallback,this);
+		sub3_= n_.subscribe("/auv/control/heading",10,&HeadingController::cheadingcallback,this);
 		//ros::NodeHandle nh_priv("~");
-		ros::param::get("/heading_controller/c_heading",c_heading);
+		//ros::param::get("/heading_controller/c_heading",c_heading);
 		ros::param::get("/heading_controller/Kp", Kp);
 		ros::param::get("/heading_controller/Ki", Ki);
 		ros::param::get("/heading_controller/Kd", Kd);
@@ -46,6 +47,19 @@ class HeadingController
 	void headingcallback(const geometry_msgs::Vector3::ConstPtr& msg)
 	{
 		m_heading = msg->z;
+		if(m_heading<0)
+		{
+			m_heading = m_heading+2*PI;
+		}
+		if(m_heading>2*PI)
+		{
+			m_heading = m_heading-2*PI;
+		}
+		
+	}
+	void cheadingcallback(const std_msgs::Float32::ConstPtr& msg)
+	{
+		c_heading = msg->data;
 	}
 	void headingctlCallback(const nav_msgs::Odometry::ConstPtr& msg)
 	{
@@ -65,11 +79,11 @@ class HeadingController
 			}
 		}
 	
-		dt = ros::Time::now().toSec() - ot;
+		dt = 0.1;// ros::Time::now().toSec() - ot;
 		delta_error = -msg->twist.twist.angular.z;	//error rate is the -angular rate
 		ot =  ros::Time::now().toSec();
 		sum_error += error*dt;
-		//ROS_INFO("e=%.3f",error);
+		ROS_INFO("e=%.3f",error);
 		c_fin.data = - (Kp*error + Ki*sum_error + Kd*delta_error);
 		
 		if(c_fin.data>20)
@@ -89,6 +103,7 @@ class HeadingController
 		ros::Publisher pub_;
 		ros::Subscriber sub_;
 		ros::Subscriber sub2_;
+		ros::Subscriber sub3_;
 
 };
 
