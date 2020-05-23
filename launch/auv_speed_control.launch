@@ -1,0 +1,10 @@
+<launch>
+	<node name = "auv_model" pkg ="sosl_auv_sim" type = "auv_model">
+	</node>
+	<node name = "speed_controller" pkg = "sosl_auv_sim" type ="speed_controller" output= "screen">
+		<param name = "c_speed" type="double" value ="0.7"/>
+		<param name = "Kp" value ="800"/>
+		<param name = "Ki" value ="400"/>
+		<param name = "Kd" value ="200"/>
+	</node>
+</launch>
